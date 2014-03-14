@@ -1,10 +1,19 @@
 package com.mwambachildrenschoir.act.scraper;
 
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
 public class ScrapeData {
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	private final String baseUrl = "http://actinternational.org/crmact/";
+	private WebDriver driver;
+	
+	public ScrapeData() {
+		driver = new FirefoxDriver();
+		driver.get(baseUrl);
 	}
 
+	public static void main(String[] args) {
+		// kick it off
+		new ScrapeData();
+	}
 }
