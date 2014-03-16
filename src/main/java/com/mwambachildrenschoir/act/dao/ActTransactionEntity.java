@@ -9,14 +9,14 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "actTransacation")
+@Table(name = "actTransaction")
 public class ActTransactionEntity {
 	@Id
 	@GeneratedValue
 	private Integer id;
 
 	@Column(name="donarName")
-	private Date donarName;
+	private String donarName;
 
 	@Column(name="paymentDate")
 	private Date paymentDate;
@@ -40,11 +40,11 @@ public class ActTransactionEntity {
 		this.id = id;
 	}
 
-	public Date getDonarName() {
+	public String getDonarName() {
 		return donarName;
 	}
 
-	public void setDonarName(Date donarName) {
+	public void setDonarName(String donarName) {
 		this.donarName = donarName;
 	}
 

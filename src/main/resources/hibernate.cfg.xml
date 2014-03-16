@@ -6,8 +6,9 @@
 		<!-- Database connection settings, Connect to HSQL, IN Memory -->
 		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
 		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-		<property name="connection.url">jdbc:hsqldb:mem:act</property>
-		<property name="connection.username">act</property>
+		<property name="hibernate.connection.url">jdbc:hsqldb:file:/Users/jim/act/db</property>
+<!-- 		<property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/mwamba</property> -->
+		<property name="connection.username">mwamba</property>
 		<property name="connection.password"></property>
 
 		<!-- JDBC connection pool (use the built-in) -->
@@ -16,7 +17,7 @@
 		<property name="format_sql">true</property>
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 		<!--create the database schema on startup if required -->
-		<property name="hbm2ddl.auto">update</property>
-		<mapping class="com.mwambachildrenschoir.act.dao"></mapping>
-	</session-factory>
+		<property name="hbm2ddl.auto">create</property>
+		<mapping class="com.mwambachildrenschoir.act.dao.ActTransactionEntity"></mapping>
+	</session-factory>		
 </hibernate-configuration>

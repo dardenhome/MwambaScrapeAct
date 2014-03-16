@@ -11,9 +11,12 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mwambachildrenschoir.act.dao.ActDao;
+
 public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);
 	private final String baseUrl = "http://actinternational.org/CRMACT/";
+	private ActDao actDao;
 	
 	/**
 	 * 
@@ -21,6 +24,8 @@ public class ScrapeGoat {
 	 * @param pass
 	 */
 	public ScrapeGoat(String user, String pass) throws Exception {
+		actDao = new ActDao();
+		actDao.getAllTransactions();
 		WebDriver driver;
 		driver = new FirefoxDriver();
 		driver.get(baseUrl);
