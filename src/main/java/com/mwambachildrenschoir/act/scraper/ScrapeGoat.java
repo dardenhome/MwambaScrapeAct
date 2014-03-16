@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mwambachildrenschoir.act.dao.ActDao;
+import com.mwambachildrenschoir.act.dao.ActTransactionEntity;
 
 public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);
@@ -103,6 +104,7 @@ public class ScrapeGoat {
 			Iterator<WebElement> fields = row.findElements(By.xpath(".//td")).iterator();
 			int i = 0;			
 			while (fields.hasNext()) {
+				ActTransactionEntity at = new ActTransactionEntity(); 
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
 					logger.info("no records here, must be a future month");
@@ -110,11 +112,31 @@ public class ScrapeGoat {
 				}
 				
 				switch(i) {
-					case 0: logger.info("date: " + field.getText()); break;
-					case 1: logger.info("num: " + field.getText()); break;
-					case 2: logger.info("name: " + field.getText()); break; // need to dig into the donor's personal  info here
-					case 3: logger.info("item: " + field.getText()); break;
-					case 4: logger.info("amount: " + field.getText()); break;
+					case 0: {	
+						at.setPaymentDate(field.getText());
+						logger.info("date: " + field.getText()); 
+						break;
+					}
+					case 1: {
+						at.setPaymentNo(Integer.parseInt(field.getText().trim()));
+						logger.info("num: " + field.getText()); 
+						break;
+					}
+					case 2: {
+						at.setDonarName(field.getText());
+						logger.info("name: " + field.getText()); 
+						break; // need to dig into the donor's personal  info here
+					}
+					case 3: {
+						at.setDescription(field.getText());
+						logger.info("item: " + field.getText()); 
+						break;
+					}
+					case 4: {
+						at.setAmount(Float.parseFloat(field.getText().trim()));
+						logger.info("amount: " + field.getText()); 
+						break;
+					}
 				}
 				i++;
 			}
