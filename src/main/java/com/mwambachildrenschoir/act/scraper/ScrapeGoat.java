@@ -1,7 +1,10 @@
 package com.mwambachildrenschoir.act.scraper;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.openqa.selenium.By;
@@ -92,8 +95,9 @@ public class ScrapeGoat {
 	/**
 	 * 
 	 * @param driver
+	 * @throws ParseException 
 	 */
-	private void handleMonth(WebDriver driver) {
+	private void handleMonth(WebDriver driver) throws ParseException {
 		// parse out this page
 		logger.info("scaping donors for current month");
 		Iterator<WebElement> rows = driver.findElements(By.xpath("//tbody/tr")).iterator();
@@ -103,8 +107,8 @@ public class ScrapeGoat {
 			logger.info("scaping donor");
 			Iterator<WebElement> fields = row.findElements(By.xpath(".//td")).iterator();
 			int i = 0;			
+			ActTransactionEntity at = new ActTransactionEntity(); 
 			while (fields.hasNext()) {
-				ActTransactionEntity at = new ActTransactionEntity(); 
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
 					logger.info("no records here, must be a future month");
@@ -113,7 +117,8 @@ public class ScrapeGoat {
 				
 				switch(i) {
 					case 0: {	
-						at.setPaymentDate(field.getText());
+						// dates look like this: 1/30/2014
+						at.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(field.getText()));
 						logger.info("date: " + field.getText()); 
 						break;
 					}
@@ -140,6 +145,7 @@ public class ScrapeGoat {
 				}
 				i++;
 			}
+			actDao.persistTransactions(at);
 		}
 		
 	}
