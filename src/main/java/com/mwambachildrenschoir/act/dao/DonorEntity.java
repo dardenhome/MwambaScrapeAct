@@ -21,6 +21,7 @@ public class DonorEntity {
 	@GeneratedValue
 	private Integer id;
 
+	// 
 	@OneToMany(mappedBy="donor", cascade = {CascadeType.ALL})
 	private List<DonationEntity> transactions;
 	
