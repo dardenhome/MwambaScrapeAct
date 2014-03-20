@@ -8,9 +8,11 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.By.ByTagName;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +99,9 @@ public class ScrapeGoat {
 	 * 
 	 * @param driver
 	 * @throws ParseException 
+	 * @throws InterruptedException 
 	 */
-	private void handleMonth(WebDriver driver) throws ParseException {
+	private void handleMonth(WebDriver driver) throws ParseException, InterruptedException {
 		// parse out this page
 		logger.info("scaping donors for current month");
 		Iterator<WebElement> rows = driver.findElements(By.xpath("//tbody/tr")).iterator();
@@ -131,12 +134,24 @@ public class ScrapeGoat {
 					
 					case 2: {
 						logger.info("name: " + field.getText());
+						
+
 						// need to dig into the donor's personal  info here
 						// find the anchor tag
 						WebElement donorLink = field.findElement(By.tagName("a"));
-						donorLink.click();
-						scrapeDonor(driver);						
-						driver.navigate().back();
+						Actions act = new Actions(driver);
+						WebElement onElement = donorLink;
+						act.contextClick(onElement).perform();
+						Thread.sleep(1000);
+						act.sendKeys("w").perform();						
+						Thread.sleep(1000);
+						Set<String> handles = driver.getWindowHandles();
+						
+						driver.switchTo().window((String)handles.toArray()[handles.size() -1]);
+						// now we need to scrape the data on the screen
+						at.setDonorId(scrapeDonor(driver));
+						driver.close();
+						driver.switchTo().window((String)handles.toArray()[1]);
 						break; 
 					}
 
@@ -163,10 +178,15 @@ public class ScrapeGoat {
 	 * 
 	 * @param driver
 	 */
-	private void scrapeDonor(WebDriver driver) {
+	private int scrapeDonor(WebDriver driver) {
+		if (driver.findElement(By.tagName("body")).getText().trim().equals("No records returned.")) return 0;
+		
 		Iterator<WebElement> ps = driver.findElements(By.xpath("//p")).iterator();
 		
 		int i = 0;
+		
+		if (!ps.hasNext()) return 0;
+			
 		DonorEntity donor = new DonorEntity();
 		while (ps.hasNext()) {
 			WebElement p = ps.next();
@@ -176,7 +196,7 @@ public class ScrapeGoat {
 			 * 2 = address1
 			 * 3 = address2
 			 * 4 = city\nstate&nbsp;\nzip
-			 * 5 = &nbsp;phone
+			 * 5 = phone:
 			 * 6 = email address from a mailto: href
 			 */
 			switch (i) {
@@ -185,7 +205,7 @@ public class ScrapeGoat {
 				case 2: donor.setAddress1(p.getText().trim()); break;
 				case 3: donor.setAddress2(p.getText().trim()); break;
 				case 4: fillInDonorCSZ(donor, p.getText()); break;
-				case 5: donor.setPhone(p.getText()); break;
+				case 5: donor.setPhone(p.getText().substring(6)); break;
 				case 6: {
 							WebElement emailLink = p.findElement(By.tagName("a"));
 							donor.setEmail(emailLink.getText().trim());
@@ -193,8 +213,9 @@ public class ScrapeGoat {
 						}
 			}
 			i++;
-		}
-		actDao.persistDonor(donor);
+		} 
+		return actDao.persistDonor(donor);
+		 
 	}
 	
 	/**

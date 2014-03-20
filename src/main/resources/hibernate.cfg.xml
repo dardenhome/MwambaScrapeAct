@@ -5,7 +5,7 @@
 	<session-factory>
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/mwamba</property>
+		<property name="hibernate.connection.url">jdbc:mysql://jim.dardenhome.com:3306/mwamba</property>
 		<property name="connection.username">mwamba</property>
 		<property name="connection.password">mwamba</property>
 

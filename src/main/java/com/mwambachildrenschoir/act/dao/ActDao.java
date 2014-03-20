@@ -19,14 +19,19 @@ public class ActDao {
 		if (searchDonation == null) {
 			session.save(donation);
 		} else {
-			session.update(donation);
+			searchDonation.setAmount(donation.getAmount());
+			searchDonation.setDescription(donation.getDescription());
+			searchDonation.setDonorId(donation.getDonorId());
+			searchDonation.setPaymentDate(donation.getPaymentDate());
+			searchDonation.setPaymentNo(donation.getPaymentNo());
+			session.update(searchDonation);
 		}
 		
 		session.getTransaction().commit();
 	}
 
 
-	public void persistDonor(DonorEntity donor) {
+	public int persistDonor(DonorEntity donor) {
 		// make sure there is a donor that already exists for this donation
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		session.beginTransaction();
@@ -35,13 +40,24 @@ public class ActDao {
 													  .add( Restrictions.eq("name", donor.getName()))
 													  .uniqueResult();		
 
+		int id;
 		if (searchDonor == null) {
 			session.save(donor);
+			id = donor.getId();
 		} else {
-			session.update(donor);
+			searchDonor.setAddress1(donor.getAddress1());
+			searchDonor.setAddress2(donor.getAddress2());
+			searchDonor.setCity(donor.getCity());
+			searchDonor.setState(donor.getState());
+			searchDonor.setZip(donor.getZip());
+			searchDonor.setPhone(donor.getPhone());
+			searchDonor.setEmail(donor.getEmail());
+			session.update(searchDonor);
+			id = searchDonor.getId();
 		}
 		
 		session.getTransaction().commit();
+		return id;
 	}
 	
 	@SuppressWarnings("unchecked")

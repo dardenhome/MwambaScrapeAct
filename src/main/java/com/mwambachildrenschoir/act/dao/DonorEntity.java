@@ -1,13 +1,9 @@
 package com.mwambachildrenschoir.act.dao;
 
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 
@@ -21,9 +17,8 @@ public class DonorEntity {
 	@GeneratedValue
 	private Integer id;
 
-	// 
-	@OneToMany(mappedBy="donor", cascade = {CascadeType.ALL})
-	private List<DonationEntity> transactions;
+//	@OneToMany(mappedBy="donor", cascade = {CascadeType.ALL})
+//	private List<DonationEntity> transactions;
 	
 	@Column(name="name")
 	private String name;
@@ -57,9 +52,6 @@ public class DonorEntity {
 		return id;
 	}
 
-	public List<DonationEntity> getTransactions() {
-		return transactions;
-	}
 
 	public String getName() {
 		return name;
@@ -93,9 +85,13 @@ public class DonorEntity {
 		this.id = id;
 	}
 
-	public void setTransactions(List<DonationEntity> transactions) {
-		this.transactions = transactions;
-	}
+//	public List<DonationEntity> getTransactions() {
+//		return transactions;
+//	}
+//	
+//	public void setTransactions(List<DonationEntity> transactions) {
+//		this.transactions = transactions;
+//	}
 
 	public void setName(String name) {
 		this.name = name;
@@ -128,5 +124,6 @@ public class DonorEntity {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
+
 
 }
