@@ -6,18 +6,23 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "actTransaction")
-public class ActTransactionEntity {
+@Table(name = "donation")
+public class DonationEntity {
+	public DonationEntity() {}
+
 	@Id
 	@GeneratedValue
 	private Integer id;
 
-	@Column(name="donarName")
-	private String donarName;
-
+	@ManyToOne
+	@JoinColumn(name="donorId")
+	private DonorEntity donor;
+	
 	@Column(name="paymentDate")
 	private Date paymentDate;
 	
@@ -30,8 +35,7 @@ public class ActTransactionEntity {
 	@Column(name="amount")
 	private double amount;
 	
-	public ActTransactionEntity() {}
-
+	
 	public Integer getId() {
 		return id;
 	}
@@ -40,12 +44,16 @@ public class ActTransactionEntity {
 		this.id = id;
 	}
 
-	public String getDonarName() {
-		return donarName;
+	public DonorEntity getDonor() {
+		return donor;
 	}
 
-	public void setDonarName(String donarName) {
-		this.donarName = donarName;
+	public void setDonar(DonorEntity donor) {
+		this.donor = donor;
+	}
+
+	public DonorEntity getDonar() {
+		return this.donor;
 	}
 
 	public Date getPaymentDate() {

@@ -15,7 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mwambachildrenschoir.act.dao.ActDao;
-import com.mwambachildrenschoir.act.dao.ActTransactionEntity;
+import com.mwambachildrenschoir.act.dao.DonationEntity;
+import com.mwambachildrenschoir.act.dao.DonorEntity;
 
 public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);
@@ -107,7 +108,7 @@ public class ScrapeGoat {
 			logger.info("scaping donor");
 			Iterator<WebElement> fields = row.findElements(By.xpath(".//td")).iterator();
 			int i = 0;			
-			ActTransactionEntity at = new ActTransactionEntity(); 
+			DonationEntity at = new DonationEntity(); 
 			while (fields.hasNext()) {
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
@@ -127,11 +128,18 @@ public class ScrapeGoat {
 						logger.info("num: " + field.getText()); 
 						break;
 					}
+					
 					case 2: {
-						at.setDonarName(field.getText());
-						logger.info("name: " + field.getText()); 
-						break; // need to dig into the donor's personal  info here
+						logger.info("name: " + field.getText());
+						// need to dig into the donor's personal  info here
+						// find the anchor tag
+						WebElement donorLink = field.findElement(By.tagName("a"));
+						donorLink.click();
+						scrapeDonor(driver);						
+						driver.navigate().back();
+						break; 
 					}
+
 					case 3: {
 						at.setDescription(field.getText());
 						logger.info("item: " + field.getText()); 
@@ -145,9 +153,66 @@ public class ScrapeGoat {
 				}
 				i++;
 			}
-			actDao.persistTransactions(at);
+			actDao.persistDonation(at);
 		}
 		
+	}
+	
+	
+	/**
+	 * 
+	 * @param driver
+	 */
+	private void scrapeDonor(WebDriver driver) {
+		Iterator<WebElement> ps = driver.findElements(By.xpath("//p")).iterator();
+		
+		int i = 0;
+		DonorEntity donor = new DonorEntity();
+		while (ps.hasNext()) {
+			WebElement p = ps.next();
+			/*
+			 * 0 = title (Donor Information)
+			 * 1 = name (this is our unique key
+			 * 2 = address1
+			 * 3 = address2
+			 * 4 = city\nstate&nbsp;\nzip
+			 * 5 = &nbsp;phone
+			 * 6 = email address from a mailto: href
+			 */
+			switch (i) {
+				case 0:
+				case 1: donor.setName(p.getText().trim()); break;
+				case 2: donor.setAddress1(p.getText().trim()); break;
+				case 3: donor.setAddress2(p.getText().trim()); break;
+				case 4: fillInDonorCSZ(donor, p.getText()); break;
+				case 5: donor.setPhone(p.getText()); break;
+				case 6: {
+							WebElement emailLink = p.findElement(By.tagName("a"));
+							donor.setEmail(emailLink.getText().trim());
+							break;
+						}
+			}
+			i++;
+		}
+		actDao.persistDonor(donor);
+	}
+	
+	/**
+	 * fill in the donor city, state, zip
+	 * @param donor
+	 */
+	private void fillInDonorCSZ(DonorEntity donor, String txt) {
+		String txtBak = txt;
+		try {
+			// Westminister, MD  21157-3476
+			donor.setCity(txt.substring(0, txt.indexOf(',')));
+			txt = txt.substring(txt.indexOf(',') + 1).trim();
+			donor.setState(txt.substring(0, 2));
+			txt = txt.substring(2).trim();
+			donor.setZip(txt.substring(0).trim());
+		} catch (Exception e) {
+			logger.warn("could not scrape the donor city,state,zip from this: " + txtBak);
+		}
 	}
 	
 	/**

@@ -1,3 +1,4 @@
+--hsqldb ddl
 CREATE SCHEMA mwamba;
 CREATE user mwamba password '';
 
@@ -7,4 +8,36 @@ donarName VARCHAR(100) NOT NULL,
 paymentDate DATE NOT NULL,
 paymentNo INTEGER NOT NULL,
 amount DOUBLE NOT NULL
+);
+
+-- mysql ddl
+DROP TABLE donation;
+DROP TABLE donor;
+
+CREATE TABLE donor (
+id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+name VARCHAR(100) NOT NULL,
+address1 VARCHAR(100) NOT NULL,
+address2 VARCHAR(100) NOT NULL,
+city VARCHAR(50) NOT NULL,
+state VARCHAR(2) NOT NULL,
+zip VARCHAR(10) NOT NULL,
+phone VARCHAR(16),
+email VARCHAR(255),
+PRIMARY KEY (`id`),
+UNIQUE KEY `nameKey`(name)
+);
+
+CREATE TABLE donation (
+id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+donorId bigint(20) unsigned NOT NULL,
+paymentDate DATE NOT NULL,
+paymentNo INTEGER NOT NULL,
+amount DOUBLE NOT NULL,
+description VARCHAR(200),
+PRIMARY KEY (`id`),
+UNIQUE KEY `paymentNoKey`(paymentNo),
+FOREIGN KEY (donorId) 
+        REFERENCES donor(id)
+        ON DELETE CASCADE
 );

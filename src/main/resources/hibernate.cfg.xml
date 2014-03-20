@@ -3,21 +3,18 @@
         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
 	<session-factory>
-		<!-- Database connection settings, Connect to HSQL, IN Memory -->
-		<property name="dialect">org.hibernate.dialect.HSQLDialect</property>
-		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-<!-- 		<property name="hibernate.connection.url">jdbc:hsqldb:file:/Users/jim/act/db</property> -->
-		<property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost</property>
-		<property name="connection.username">sa</property>
-		<property name="connection.password"></property>
+		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/mwamba</property>
+		<property name="connection.username">mwamba</property>
+		<property name="connection.password">mwamba</property>
 
 		<!-- JDBC connection pool (use the built-in) -->
 		<property name="connection.pool_size">1</property>
 		<property name="show_sql">true</property>
 		<property name="format_sql">true</property>
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
-		<!--create the database schema on startup if required -->
-		<property name="hbm2ddl.auto">create</property>
-		<mapping class="com.mwambachildrenschoir.act.dao.ActTransactionEntity"></mapping>
+		<mapping class="com.mwambachildrenschoir.act.dao.DonorEntity"></mapping>
+		<mapping class="com.mwambachildrenschoir.act.dao.DonationEntity"></mapping>
 	</session-factory>		
 </hibernate-configuration>
