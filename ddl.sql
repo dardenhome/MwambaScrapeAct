@@ -24,6 +24,7 @@ state VARCHAR(2) NOT NULL,
 zip VARCHAR(10) NOT NULL,
 phone VARCHAR(16),
 email VARCHAR(255),
+notes VARCHAR(255),
 PRIMARY KEY (`id`),
 UNIQUE KEY `nameKey`(name)
 );

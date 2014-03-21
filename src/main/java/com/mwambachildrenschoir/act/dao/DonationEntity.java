@@ -15,7 +15,7 @@ public class DonationEntity {
 
 	@Id
 	@GeneratedValue
-	private Integer id;
+	private int id;
 
 	@Column(name="donorId")
 	private int donorId;
@@ -93,5 +93,4 @@ public class DonationEntity {
 	public void setDonorId(int donorId) {
 		this.donorId = donorId;
 	}
-	
 }

@@ -1,5 +1,6 @@
 package com.mwambachildrenschoir.act.scraper;
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -8,11 +9,10 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.By.ByTagName;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,22 +32,30 @@ public class ScrapeGoat {
 	 */
 	public ScrapeGoat(String user, String pass) throws Exception {
 		actDao = new ActDao();
-		actDao.getAllTransactions();
 		WebDriver driver;
-		driver = new FirefoxDriver();
+		driver = new HtmlUnitDriver(true); // true enables javascript
+
 		driver.get(baseUrl);
 		
-		logger.info("logging in");
+		if (logger.isDebugEnabled()) logger.debug("logging in");
 		driver.findElement(By.id("txtUserName")).clear();
 		driver.findElement(By.id("txtUserName")).sendKeys(user);
 		driver.findElement(By.id("txtPassword")).sendKeys(pass);
 		driver.findElement(By.id("btnLogin")).click();
 		
-		logger.info("redirecting to secondary login");
+		if (logger.isDebugEnabled()) logger.debug("redirecting to secondary login");
 		driver.navigate().to(baseUrl + "platform/webtools/old_system_login.aspx");
 		
-		logger.info("click secondary login");
-		driver.findElement(By.id("btnSubmit")).click();
+		if (logger.isDebugEnabled()) logger.debug("click secondary login");
+		WebElement btnSubmit = driver.findElement(By.id("btnSubmit"));
+		
+	    JavascriptExecutor executor = (JavascriptExecutor)driver;
+	    executor.executeScript( "document.forms[0].action = 'http://www.iaact.org/staffback/Ncheck_user.asp';" +
+	    						"document.forms[0].__VIEWSTATE.name = 'NOVIEWSTATE';", 
+	    						btnSubmit
+	    					  );
+	    btnSubmit.submit();
+		
 		
 		List<WebElement> elements = driver.findElements(By.tagName("form"));
 		
@@ -56,7 +64,7 @@ public class ScrapeGoat {
 		int accountIndex = 0;
 		String currentUrl = driver.getCurrentUrl();
 				
-		logger.info("beginning to iterate over accounts");
+		if (logger.isDebugEnabled()) logger.debug("beginning to iterate over accounts");
 		while (accountIndex < maxAccounts) {
 			
 			WebElement form = elements.get(accountIndex);
@@ -68,8 +76,15 @@ public class ScrapeGoat {
 			driver.navigate().to(currentUrl);
 			elements = driver.findElements(By.tagName("form"));
 		}
+		
+		updateDonors(driver);
+		
+		logger.info("closing browser");
 		driver.close();
+		logger.info("closing quiting");
 		driver.quit();
+		logger.info("finished");
+
 	}
 	
 	/**
@@ -80,18 +95,19 @@ public class ScrapeGoat {
 	private void handleMonths(WebDriver driver) throws Exception {
 		Iterator<WebElement> elements = driver.findElements(By.tagName("form")).iterator();
 				
-		logger.info("beginning to iterate over months");
+		if (logger.isDebugEnabled()) logger.debug("beginning to iterate over months");
 		while (elements.hasNext()) {
 			WebElement form = elements.next();
-			logger.info("heading into new month");
+			if (logger.isDebugEnabled())  logger.debug("heading into new month");
 			form.findElement(By.xpath(".//input[@type='submit']")).click();
 			Set<String> handles = driver.getWindowHandles();
 			
-			driver.switchTo().window((String)handles.toArray()[handles.size() -1]);
+			driver.switchTo().window((String)handles.toArray()[0]);
+
 			// now we need to scrape the data on the screen
 			handleMonth(driver);
 			driver.close();
-			driver.switchTo().window((String)handles.toArray()[0]);
+			driver.switchTo().window((String)handles.toArray()[1]);
 		}
 	}
 	
@@ -103,93 +119,101 @@ public class ScrapeGoat {
 	 */
 	private void handleMonth(WebDriver driver) throws ParseException, InterruptedException {
 		// parse out this page
-		logger.info("scaping donors for current month");
+		if (logger.isDebugEnabled()) logger.debug("scaping donors for current month");
 		Iterator<WebElement> rows = driver.findElements(By.xpath("//tbody/tr")).iterator();
 		while (rows.hasNext()) {
 			WebElement row = rows.next();
 			
-			logger.info("scaping donor");
+			if (logger.isDebugEnabled()) logger.debug("scaping donor");
 			Iterator<WebElement> fields = row.findElements(By.xpath(".//td")).iterator();
 			int i = 0;			
-			DonationEntity at = new DonationEntity(); 
+			DonationEntity donation = new DonationEntity(); 
+			donation.setDonorId(0);
 			while (fields.hasNext()) {
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
-					logger.info("no records here, must be a future month");
-					break;
+					logger.warn("no records for this month, must be a future month");
+					continue;
 				}
 				
 				switch(i) {
 					case 0: {	
 						// dates look like this: 1/30/2014
-						at.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(field.getText()));
-						logger.info("date: " + field.getText()); 
+						donation.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(field.getText()));
+						if (logger.isDebugEnabled()) logger.debug("date: " + field.getText()); 
 						break;
 					}
 					case 1: {
-						at.setPaymentNo(Integer.parseInt(field.getText().trim()));
-						logger.info("num: " + field.getText()); 
+						donation.setPaymentNo(Integer.parseInt(field.getText().trim()));
+						if (logger.isDebugEnabled()) logger.debug("num: " + field.getText()); 
 						break;
 					}
 					
 					case 2: {
-						logger.info("name: " + field.getText());
-						
+						logger.info("working on donor: " + field.getText());
+						String href = field.findElement(By.tagName("a")).getAttribute("href");
+						DonorEntity donor = new DonorEntity();
+						donor.setName(field.getText().replace("Donor Information", "").trim());
+						donor.setAddress1("");
+						donor.setAddress2("");
+						donor.setCity("");
+						donor.setState("");
+						donor.setZip("");
+						donor.setEmail("");
+						donor.setPhone("");
+						donor.setNotes(href);
+						donation.setDonorId(actDao.persistDonor(donor));						
 
-						// need to dig into the donor's personal  info here
-						// find the anchor tag
-						WebElement donorLink = field.findElement(By.tagName("a"));
-						Actions act = new Actions(driver);
-						WebElement onElement = donorLink;
-						act.contextClick(onElement).perform();
-						Thread.sleep(1000);
-						act.sendKeys("w").perform();						
-						Thread.sleep(1000);
-						Set<String> handles = driver.getWindowHandles();
-						
-						driver.switchTo().window((String)handles.toArray()[handles.size() -1]);
-						// now we need to scrape the data on the screen
-						at.setDonorId(scrapeDonor(driver));
-						driver.close();
-						driver.switchTo().window((String)handles.toArray()[1]);
 						break; 
 					}
 
 					case 3: {
-						at.setDescription(field.getText());
-						logger.info("item: " + field.getText()); 
+						donation.setDescription(field.getText());
+						if (logger.isDebugEnabled()) logger.debug("item: " + field.getText()); 
 						break;
 					}
 					case 4: {
-						at.setAmount(Float.parseFloat(field.getText().trim()));
-						logger.info("amount: " + field.getText()); 
+						donation.setAmount(Float.parseFloat(field.getText().trim()));
+						if (logger.isDebugEnabled()) logger.debug("amount: " + field.getText()); 
 						break;
 					}
 				}
 				i++;
 			}
-			actDao.persistDonation(at);
+			
+			if (donation.getDonorId() == 0) continue;
+			actDao.persistDonation(donation);
 		}
 		
 	}
 	
+	/**
+	 * 
+	 * @param driver
+	 * @throws UnsupportedEncodingException
+	 */
+	private void updateDonors(WebDriver driver) throws UnsupportedEncodingException {
+		Iterator<DonorEntity> donors = (Iterator<DonorEntity>)actDao.getAllDonors().iterator();
+		logger.info("begining deep dive into donor info");
+		while (donors.hasNext()) {
+			DonorEntity donor = donors.next();
+			if (donor.getNotes() == null || donor.getNotes().trim().equals("")) continue;
+			driver.navigate().to(donor.getNotes());
+			Iterator<WebElement> iter = driver.findElements(By.xpath("//p")).iterator();
+			scrapeDonor(iter);
+		}
+	}
 	
 	/**
 	 * 
 	 * @param driver
 	 */
-	private int scrapeDonor(WebDriver driver) {
-		if (driver.findElement(By.tagName("body")).getText().trim().equals("No records returned.")) return 0;
-		
-		Iterator<WebElement> ps = driver.findElements(By.xpath("//p")).iterator();
+	private int scrapeDonor(Iterator<WebElement> iter) {
+		DonorEntity donor = new DonorEntity();
 		
 		int i = 0;
-		
-		if (!ps.hasNext()) return 0;
-			
-		DonorEntity donor = new DonorEntity();
-		while (ps.hasNext()) {
-			WebElement p = ps.next();
+		while (iter.hasNext()) {
+			WebElement p = iter.next();
 			/*
 			 * 0 = title (Donor Information)
 			 * 1 = name (this is our unique key
@@ -200,12 +224,17 @@ public class ScrapeGoat {
 			 * 6 = email address from a mailto: href
 			 */
 			switch (i) {
-				case 0:
-				case 1: donor.setName(p.getText().trim()); break;
+				case 0: break;
+				case 1: {
+							String name = p.getText().trim();
+							logger.info("diving into donor information for: " + name);
+							donor.setName(name);
+							break;
+						}
 				case 2: donor.setAddress1(p.getText().trim()); break;
 				case 3: donor.setAddress2(p.getText().trim()); break;
 				case 4: fillInDonorCSZ(donor, p.getText()); break;
-				case 5: donor.setPhone(p.getText().substring(6)); break;
+				case 5: donor.setPhone(p.getText().substring(6).trim()); break;
 				case 6: {
 							WebElement emailLink = p.findElement(By.tagName("a"));
 							donor.setEmail(emailLink.getText().trim());
@@ -232,7 +261,7 @@ public class ScrapeGoat {
 			txt = txt.substring(2).trim();
 			donor.setZip(txt.substring(0).trim());
 		} catch (Exception e) {
-			logger.warn("could not scrape the donor city,state,zip from this: " + txtBak);
+			logger.error("could not scrape the donor city,state,zip from this: " + txtBak);
 		}
 	}
 	

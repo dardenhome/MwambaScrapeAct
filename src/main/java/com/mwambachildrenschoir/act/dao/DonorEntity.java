@@ -15,7 +15,7 @@ public class DonorEntity {
 	
 	@Id
 	@GeneratedValue
-	private Integer id;
+	private int id;
 
 //	@OneToMany(mappedBy="donor", cascade = {CascadeType.ALL})
 //	private List<DonationEntity> transactions;
@@ -24,31 +24,34 @@ public class DonorEntity {
 	private String name;
 
 	@Column(name="address1")
-	private String address1;
+	private String address1 = "";
 	
 	@Column(name="address2")
-	private String address2;
+	private String address2 = "";
 	
 	@Column(name="city")
-	private String city;
+	private String city = "";
 
 	@Column(name="state")
-	private String state;
+	private String state = "";
 	
 	@Column(name="zip")
-	private String zip;
+	private String zip = "";
 
 	@Column(name="email")
-	private String email;
+	private String email = "";
 
 	@Column(name="phone")
-	private String phone;
+	private String phone = "";
+
+	@Column(name="notes")
+	private String notes = "";
 
 	public String getPhone() {
 		return phone;
 	}
 
-	public Integer getId() {
+	public int getId() {
 		return id;
 	}
 
@@ -81,7 +84,7 @@ public class DonorEntity {
 		return email;
 	}
 
-	public void setId(Integer id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -125,5 +128,17 @@ public class DonorEntity {
 		this.phone = phone;
 	}
 
+	public String getNotes() {
+		return notes;
+	}
 
+	public void setNotes(String notes) {
+		this.notes = notes;
+	}
+
+	@Override
+	public String toString() {
+		return "[id=" + id + ",name=" + name + ",address1=" + address1 + ",address2=" + address2 + 
+				",city=" + city + ",state=" + state + ",zip=" + zip + ",phone=" + phone + ",email=" + email + ",notes=" + notes + "]"; 
+	}
 }
