@@ -62,7 +62,6 @@ public class ScrapeGoat {
 
 			int detailsFormsCount = donationForms.size() - 1;
 			int detailsFormsIndex = 0;			
-			String currentDetailsUrl = driver.getCurrentUrl();
 			
 			// now we're looking at the pages that have the months for each account
 			List<WebElement> detailsForms = driver.findElements(By.tagName("form"));

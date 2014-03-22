@@ -30,8 +30,8 @@ public class ExportDonorToCSV {
 
 				logger.info(txt);
 				out.println(txt);
-				out.close();
 			}
+			out.close();
 		} catch (IOException e) {
 			logger.error("error writing to file", e);
 		}
