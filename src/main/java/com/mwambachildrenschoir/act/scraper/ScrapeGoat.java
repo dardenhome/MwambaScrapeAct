@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -24,6 +23,7 @@ public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);
 	private final String baseUrl = "http://actinternational.org/CRMACT/";
 	private ActDao actDao;
+	private WebDriver driver;
 	
 	/**
 	 * 
@@ -31,8 +31,8 @@ public class ScrapeGoat {
 	 * @param pass
 	 */
 	public ScrapeGoat(String user, String pass) throws Exception {
+		JavascriptExecutor js;
 		actDao = new ActDao();
-		WebDriver driver;
 		driver = new HtmlUnitDriver(true); // true enables javascript
 
 		driver.get(baseUrl);
@@ -44,37 +44,55 @@ public class ScrapeGoat {
 		driver.findElement(By.id("btnLogin")).click();
 		
 		if (logger.isDebugEnabled()) logger.debug("redirecting to secondary login");
-		driver.navigate().to(baseUrl + "platform/webtools/old_system_login.aspx");
-		
-		if (logger.isDebugEnabled()) logger.debug("click secondary login");
-		WebElement btnSubmit = driver.findElement(By.id("btnSubmit"));
-		
-	    JavascriptExecutor executor = (JavascriptExecutor)driver;
-	    executor.executeScript( "document.forms[0].action = 'http://www.iaact.org/staffback/Ncheck_user.asp';" +
-	    						"document.forms[0].__VIEWSTATE.name = 'NOVIEWSTATE';", 
-	    						btnSubmit
-	    					  );
-	    btnSubmit.submit();
+		doSecondaryLogin();
 		
 		
-		List<WebElement> elements = driver.findElements(By.tagName("form"));
+		// Mwamba and IAM donation submit forms
+		List<WebElement> donationForms = driver.findElements(By.tagName("form"));
 		
 		// there is one extra form on the page that we don't want to submit
-		int maxAccounts = elements.size() - 1;
-		int accountIndex = 0;
-		String currentUrl = driver.getCurrentUrl();
+		int donationsFormsCount = donationForms.size() - 1;
+		int donatonsFormsIndex = 0;
+		String currentDonationsUrl = driver.getCurrentUrl();
 				
 		if (logger.isDebugEnabled()) logger.debug("beginning to iterate over accounts");
-		while (accountIndex < maxAccounts) {
+		while (donatonsFormsIndex < donationsFormsCount) {
 			
-			WebElement form = elements.get(accountIndex);
-			form.submit();
-			// now we need to dive into each account by month
-			handleMonths(driver);
+			donationForms.get(donatonsFormsIndex).submit();
+
+			int detailsFormsCount = donationForms.size() - 1;
+			int detailsFormsIndex = 0;			
+			String currentDetailsUrl = driver.getCurrentUrl();
 			
-			accountIndex++;
-			driver.navigate().to(currentUrl);
-			elements = driver.findElements(By.tagName("form"));
+			// now we're looking at the pages that have the months for each account
+			List<WebElement> detailsForms = driver.findElements(By.tagName("form"));
+			
+			while (detailsFormsIndex < detailsFormsCount) {	
+				WebElement form = detailsForms.get(detailsFormsIndex);
+
+				// need to manipulate the form so it opens in current window instead of top window				
+				js = (JavascriptExecutor)driver;
+				js.executeScript("document.forms[" + detailsFormsIndex + "].target='_self'", form);
+				form.submit();
+				
+				scrapeMonthDonations();
+				detailsFormsIndex++;
+				
+//				// need to back up two pages for this to work.. clearly a bug in the 
+//				// web developer's design
+				doSecondaryLogin();
+				donationForms = driver.findElements(By.tagName("form"));
+				donationForms.get(donatonsFormsIndex).submit();
+				
+				// TODO: may need to click a link here - not navigate
+				detailsForms = driver.findElements(By.tagName("form"));
+				Thread.sleep(5000);
+			}
+			
+			donatonsFormsIndex++;
+			driver.navigate().to(currentDonationsUrl);
+			donationForms = driver.findElements(By.tagName("form"));
+			Thread.sleep(5000);
 		}
 		
 		updateDonors(driver);
@@ -87,29 +105,6 @@ public class ScrapeGoat {
 
 	}
 	
-	/**
-	 * 
-	 * @param driver
-	 * @throws InterruptedException 
-	 */
-	private void handleMonths(WebDriver driver) throws Exception {
-		Iterator<WebElement> elements = driver.findElements(By.tagName("form")).iterator();
-				
-		if (logger.isDebugEnabled()) logger.debug("beginning to iterate over months");
-		while (elements.hasNext()) {
-			WebElement form = elements.next();
-			if (logger.isDebugEnabled())  logger.debug("heading into new month");
-			form.findElement(By.xpath(".//input[@type='submit']")).click();
-			Set<String> handles = driver.getWindowHandles();
-			
-			driver.switchTo().window((String)handles.toArray()[0]);
-
-			// now we need to scrape the data on the screen
-			handleMonth(driver);
-			driver.close();
-			driver.switchTo().window((String)handles.toArray()[1]);
-		}
-	}
 	
 	/**
 	 * 
@@ -117,7 +112,8 @@ public class ScrapeGoat {
 	 * @throws ParseException 
 	 * @throws InterruptedException 
 	 */
-	private void handleMonth(WebDriver driver) throws ParseException, InterruptedException {
+	private void scrapeMonthDonations() throws ParseException, InterruptedException {
+
 		// parse out this page
 		if (logger.isDebugEnabled()) logger.debug("scaping donors for current month");
 		Iterator<WebElement> rows = driver.findElements(By.xpath("//tbody/tr")).iterator();
@@ -266,6 +262,21 @@ public class ScrapeGoat {
 	}
 	
 	/**
+	 * this is a hack because of the ACT sessions 
+	 */
+	private void doSecondaryLogin() {
+		driver.navigate().to(baseUrl + "platform/webtools/old_system_login.aspx");
+		WebElement btnSubmit = driver.findElement(By.id("btnSubmit"));
+		
+	    JavascriptExecutor js = (JavascriptExecutor)driver;
+	    js.executeScript( "document.forms[0].action='http://www.iaact.org/staffback/Ncheck_user.asp';" +
+	    						"document.forms[0].__VIEWSTATE.name='NOVIEWSTATE';", 
+	    						btnSubmit
+	    					  );
+	    btnSubmit.submit(); // secondary login
+	}
+	
+	/**
 	 * 
 	 * @param args
 	 * @throws Exception
@@ -273,5 +284,6 @@ public class ScrapeGoat {
 	public static void main(String[] args) throws Exception {
 		// kick it off
 		new ScrapeGoat(args[0], args[1]);
+		System.exit(0);
 	}
 }

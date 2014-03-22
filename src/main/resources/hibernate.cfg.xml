@@ -5,14 +5,14 @@
 	<session-factory>
 		<property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
-		<property name="hibernate.connection.url">jdbc:mysql://jim.dardenhome.com:3306/mwamba</property>
-		<property name="connection.username">mwamba</property>
-		<property name="connection.password">mwamba</property>
+		<property name="hibernate.connection.url">jdbc:mysql://mwamba2.cflej8brnr9b.us-west-2.rds.amazonaws.com:3306/mwamba</property>
+		<property name="connection.username">act</property>
+<!-- 		<property name="connection.password"></property> -->
 
 		<!-- JDBC connection pool (use the built-in) -->
 		<property name="connection.pool_size">1</property>
 		<property name="show_sql">false</property>
-		<property name="format_sql">true</property>
+		<property name="format_sql">false</property>
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 		<mapping class="com.mwambachildrenschoir.act.dao.DonorEntity"></mapping>
 		<mapping class="com.mwambachildrenschoir.act.dao.DonationEntity"></mapping>
