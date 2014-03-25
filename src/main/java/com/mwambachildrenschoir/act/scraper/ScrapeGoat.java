@@ -30,7 +30,7 @@ public class ScrapeGoat {
 	 * @param user
 	 * @param pass
 	 */
-	public ScrapeGoat(String user, String pass) throws Exception {
+	public ScrapeGoat() throws Exception {
 		JavascriptExecutor js;
 		actDao = new ActDao();
 		driver = new HtmlUnitDriver(true); // true enables javascript
@@ -39,8 +39,8 @@ public class ScrapeGoat {
 		
 		if (logger.isDebugEnabled()) logger.debug("logging in");
 		driver.findElement(By.id("txtUserName")).clear();
-		driver.findElement(By.id("txtUserName")).sendKeys(user);
-		driver.findElement(By.id("txtPassword")).sendKeys(pass);
+		driver.findElement(By.id("txtUserName")).sendKeys(System.getProperty("act.user"));
+		driver.findElement(By.id("txtPassword")).sendKeys(System.getProperty("act.pass"));
 		driver.findElement(By.id("btnLogin")).click();
 		
 		if (logger.isDebugEnabled()) logger.debug("redirecting to secondary login");
@@ -282,7 +282,7 @@ public class ScrapeGoat {
 	 */
 	public static void main(String[] args) throws Exception {
 		// kick it off
-		new ScrapeGoat(args[0], args[1]);
+		new ScrapeGoat();
 		System.exit(0);
 	}
 }
