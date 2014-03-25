@@ -1,4 +1,4 @@
-package com.mwambachildrenschoir.act.scraper;
+package com.mwambachildrenschoir.act;
 
 import java.io.BufferedWriter;
 import java.io.File;

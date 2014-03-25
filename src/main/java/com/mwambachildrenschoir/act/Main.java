@@ -1,4 +1,4 @@
-package com.mwambachildrenschoir.act.scraper;
+package com.mwambachildrenschoir.act;
 
 public class Main {
 
