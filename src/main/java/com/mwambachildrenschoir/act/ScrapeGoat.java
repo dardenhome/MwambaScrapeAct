@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.eclipse.jetty.util.log.Log;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -61,9 +60,6 @@ public class ScrapeGoat {
 			
 			donationForms.get(donatonsFormsIndex).submit();
 
-//			int detailsFormsCount = donationForms.size() - 1;
-//			int detailsFormsIndex = 0;			
-			
 			// now we're looking at the pages that have the months for each account
 			// we only need the first one because we can manipulat the hidden fields 
 			// using javascript and select as many months as we want (or any month)
@@ -88,41 +84,6 @@ public class ScrapeGoat {
 			
 			form.submit();
 			scrapeMonthDonations();
-			
-//			while (detailsFormsIndex < detailsFormsCount) {	
-//				WebElement form = detailsForms.get(detailsFormsIndex);
-//
-//				// need to manipulate the form so it opens in current window instead of top window				
-//				js = (JavascriptExecutor)driver;
-//				js.executeScript("document.forms[" + detailsFormsIndex + "].target='_self'", form);
-//				
-//				// now adjust the dates
-//				Iterator<WebElement> inputs = form.findElements(By.tagName("input")).iterator();
-//				while (inputs.hasNext()) {
-//					WebElement input = inputs.next();
-//					if (input.getAttribute("name").equals("BegDate")) {
-//						js.executeScript("document.forms[" + detailsFormsIndex + "].elements['BegDate'].value='01/01/2013';");
-//					}
-//					
-//					if (input.getAttribute("name").equals("EndDate")) {
-//						js.executeScript("document.forms[" + detailsFormsIndex + "].elements['EndDate'].value='12/31/2014';");
-//					}
-//				}
-//				
-//				form.submit();
-//				
-//				scrapeMonthDonations();
-//				detailsFormsIndex++;
-//				
-////				// need to back up two pages for this to work.. clearly a bug in the 
-////				// web developer's design
-//				doSecondaryLogin();
-//				donationForms = driver.findElements(By.tagName("form"));
-//				donationForms.get(donatonsFormsIndex).submit();
-//				
-//				detailsForms = driver.findElements(By.tagName("form"));
-//				Thread.sleep(5000);
-//			}
 			
 			donatonsFormsIndex++;
 			driver.navigate().to(currentDonationsUrl);
@@ -333,7 +294,7 @@ public class ScrapeGoat {
 		}
 		
 		if (beginDate.equals("") || endDate.equals("")) {
-			System.out.println("you must provide beginning and end date:\n java -jar ScrapeGoat.jar --beginDate 01/01/2014 --endDate 12/31/2014");
+			System.out.println("you must provide beginning and end date:\n java -jar scrapegoat.jar --beginDate 01/01/2014 --endDate 12/31/2014");
 			System.exit(0);
 		}
 		

@@ -14,7 +14,7 @@
 		<property name="show_sql">false</property>
 		<property name="format_sql">false</property>
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
-		<mapping class="com.mwambachildrenschoir.act.dao.DonorEntity"></mapping>
-		<mapping class="com.mwambachildrenschoir.act.dao.DonationEntity"></mapping>
+		<mapping class="com.mwambachildrenschoir.dao.DonorEntity"></mapping>
+		<mapping class="com.mwambachildrenschoir.dao.DonationEntity"></mapping>
 	</session-factory>		
 </hibernate-configuration>
