@@ -16,9 +16,9 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mwambachildrenschoir.act.dao.ActDao;
-import com.mwambachildrenschoir.act.dao.DonationEntity;
-import com.mwambachildrenschoir.act.dao.DonorEntity;
+import com.mwambachildrenschoir.dao.ActDao;
+import com.mwambachildrenschoir.dao.DonationEntity;
+import com.mwambachildrenschoir.dao.DonorEntity;
 
 public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);

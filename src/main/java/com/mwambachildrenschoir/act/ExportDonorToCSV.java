@@ -10,8 +10,8 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mwambachildrenschoir.act.dao.ActDao;
-import com.mwambachildrenschoir.act.dao.DonorEntity;
+import com.mwambachildrenschoir.dao.ActDao;
+import com.mwambachildrenschoir.dao.DonorEntity;
 
 public class ExportDonorToCSV {
 	final static Logger logger = LoggerFactory.getLogger(ExportDonorToCSV.class);

@@ -1,4 +1,4 @@
-package com.mwambachildrenschoir.act.dao;
+package com.mwambachildrenschoir.dao;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
