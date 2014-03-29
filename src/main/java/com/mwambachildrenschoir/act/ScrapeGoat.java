@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.jetty.util.log.Log;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -30,7 +31,7 @@ public class ScrapeGoat {
 	 * @param user
 	 * @param pass
 	 */
-	public ScrapeGoat() throws Exception {
+	public ScrapeGoat(String beginDate, String endDate) throws Exception {
 		JavascriptExecutor js;
 		actDao = new ActDao();
 		driver = new HtmlUnitDriver(true); // true enables javascript
@@ -60,33 +61,68 @@ public class ScrapeGoat {
 			
 			donationForms.get(donatonsFormsIndex).submit();
 
-			int detailsFormsCount = donationForms.size() - 1;
-			int detailsFormsIndex = 0;			
+//			int detailsFormsCount = donationForms.size() - 1;
+//			int detailsFormsIndex = 0;			
 			
 			// now we're looking at the pages that have the months for each account
+			// we only need the first one because we can manipulat the hidden fields 
+			// using javascript and select as many months as we want (or any month)
 			List<WebElement> detailsForms = driver.findElements(By.tagName("form"));
+			WebElement form = detailsForms.get(0);
+			// need to manipulate the form so it opens in current window instead of top window				
+			js = (JavascriptExecutor)driver;
+			js.executeScript("document.forms[0].target='_self'", form);
 			
-			while (detailsFormsIndex < detailsFormsCount) {	
-				WebElement form = detailsForms.get(detailsFormsIndex);
-
-				// need to manipulate the form so it opens in current window instead of top window				
-				js = (JavascriptExecutor)driver;
-				js.executeScript("document.forms[" + detailsFormsIndex + "].target='_self'", form);
-				form.submit();
+			// now adjust the dates
+			Iterator<WebElement> inputs = form.findElements(By.tagName("input")).iterator();
+			while (inputs.hasNext()) {
+				WebElement input = inputs.next();
+				if (input.getAttribute("name").equals("BegDate")) {
+					js.executeScript("document.forms[0].elements['BegDate'].value='" + beginDate + "';");
+				}
 				
-				scrapeMonthDonations();
-				detailsFormsIndex++;
-				
-//				// need to back up two pages for this to work.. clearly a bug in the 
-//				// web developer's design
-				doSecondaryLogin();
-				donationForms = driver.findElements(By.tagName("form"));
-				donationForms.get(donatonsFormsIndex).submit();
-				
-				// TODO: may need to click a link here - not navigate
-				detailsForms = driver.findElements(By.tagName("form"));
-				Thread.sleep(5000);
+				if (input.getAttribute("name").equals("EndDate")) {
+					js.executeScript("document.forms[0].elements['EndDate'].value='" + endDate + "';");
+				}
 			}
+			
+			form.submit();
+			scrapeMonthDonations();
+			
+//			while (detailsFormsIndex < detailsFormsCount) {	
+//				WebElement form = detailsForms.get(detailsFormsIndex);
+//
+//				// need to manipulate the form so it opens in current window instead of top window				
+//				js = (JavascriptExecutor)driver;
+//				js.executeScript("document.forms[" + detailsFormsIndex + "].target='_self'", form);
+//				
+//				// now adjust the dates
+//				Iterator<WebElement> inputs = form.findElements(By.tagName("input")).iterator();
+//				while (inputs.hasNext()) {
+//					WebElement input = inputs.next();
+//					if (input.getAttribute("name").equals("BegDate")) {
+//						js.executeScript("document.forms[" + detailsFormsIndex + "].elements['BegDate'].value='01/01/2013';");
+//					}
+//					
+//					if (input.getAttribute("name").equals("EndDate")) {
+//						js.executeScript("document.forms[" + detailsFormsIndex + "].elements['EndDate'].value='12/31/2014';");
+//					}
+//				}
+//				
+//				form.submit();
+//				
+//				scrapeMonthDonations();
+//				detailsFormsIndex++;
+//				
+////				// need to back up two pages for this to work.. clearly a bug in the 
+////				// web developer's design
+//				doSecondaryLogin();
+//				donationForms = driver.findElements(By.tagName("form"));
+//				donationForms.get(donatonsFormsIndex).submit();
+//				
+//				detailsForms = driver.findElements(By.tagName("form"));
+//				Thread.sleep(5000);
+//			}
 			
 			donatonsFormsIndex++;
 			driver.navigate().to(currentDonationsUrl);
@@ -124,18 +160,20 @@ public class ScrapeGoat {
 			int i = 0;			
 			DonationEntity donation = new DonationEntity(); 
 			donation.setDonorId(0);
+			String donorTxt = "";
+			String dateTxt = "";
 			while (fields.hasNext()) {
+
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
 					logger.warn("no records for this month, must be a future month");
 					continue;
 				}
-				
 				switch(i) {
 					case 0: {	
 						// dates look like this: 1/30/2014
-						donation.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(field.getText()));
-						if (logger.isDebugEnabled()) logger.debug("date: " + field.getText()); 
+						dateTxt = field.getText();
+						donation.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(dateTxt));						
 						break;
 					}
 					case 1: {
@@ -145,10 +183,10 @@ public class ScrapeGoat {
 					}
 					
 					case 2: {
-						logger.info("working on donor: " + field.getText());
+						donorTxt = field.getText().replace("Donor Information", "").trim();
 						String href = field.findElement(By.tagName("a")).getAttribute("href");
 						DonorEntity donor = new DonorEntity();
-						donor.setName(field.getText().replace("Donor Information", "").trim());
+						donor.setName(donorTxt);
 						donor.setAddress1("");
 						donor.setAddress2("");
 						donor.setCity("");
@@ -177,6 +215,7 @@ public class ScrapeGoat {
 			}
 			
 			if (donation.getDonorId() == 0) continue;
+			logger.info("found donation, date:" + dateTxt + ", donor:" + donorTxt);
 			actDao.persistDonation(donation);
 		}
 		
@@ -282,7 +321,23 @@ public class ScrapeGoat {
 	 */
 	public static void main(String[] args) throws Exception {
 		// kick it off
-		new ScrapeGoat();
+		String beginDate = "";
+		String endDate = "";
+		for (int i=0; i < args.length; i++) {
+			if (args[i].equals("--beginDate")) {
+				beginDate = args[i+1];
+			}
+			if (args[i].equals("--endDate")) {
+				endDate = args[i+1];
+			}
+		}
+		
+		if (beginDate.equals("") || endDate.equals("")) {
+			System.out.println("you must provide beginning and end date:\n java -jar ScrapeGoat.jar --beginDate 01/01/2014 --endDate 12/31/2014");
+			System.exit(0);
+		}
+		
+		new ScrapeGoat(beginDate, endDate);
 		System.exit(0);
 	}
 }
