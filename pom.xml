@@ -103,6 +103,7 @@
 				</executions>
 			</plugin>
 		</plugins>
+		 <finalName>scrapegoat</finalName>
 	</build>
 
 </project>
