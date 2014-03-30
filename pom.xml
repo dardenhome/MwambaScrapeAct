@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.mwambachildrenschoir</groupId>
-	<artifactId>act</artifactId>
+	<artifactId>scrapegoat</artifactId>
 	<version>1.0-RELEASE</version>
-	<name>ACT Pull</name>
+	<name>Scrapegoat</name>
 	<description>Pull monthly transaction from ACT</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -89,8 +89,6 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
-					<finalName>scrapegoat</finalName>
-					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
 					<execution>
@@ -103,7 +101,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-		 <finalName>scrapegoat</finalName>
 	</build>
-
 </project>
