@@ -54,6 +54,13 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.22</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.mwambachildrenschoir</groupId>
+			<artifactId>persistence</artifactId>
+			<version>1.0-RELEASE</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>
@@ -79,7 +86,7 @@
 					</archive>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>					
+					</descriptorRefs>
 					<finalName>scrapegoat</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
