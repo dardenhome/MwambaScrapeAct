@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.eclipse.jetty.util.log.Log;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
