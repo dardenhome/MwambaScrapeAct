@@ -162,8 +162,8 @@ public class ScrapeGoat {
 						donor.setEmail("");
 						donor.setPhone("");
 						donor.setNotes(href);
-						donation.setDonorId(actDao.persistDonor(donor));						
-
+						// only put a placeholder in for this donor if the entity does not already exist
+						donation.setDonorId(actDao.saveNewDonor(donor));
 						break; 
 					}
 
