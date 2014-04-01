@@ -98,12 +98,9 @@ public class ScrapeGoat {
 		
 		if (scrapeDonors) updateDonors(driver);
 		
-		logger.info("closing browser");
 		driver.close();
-		logger.info("closing quiting");
 		driver.quit();
 		logger.info("finished");
-
 	}
 	
 	
