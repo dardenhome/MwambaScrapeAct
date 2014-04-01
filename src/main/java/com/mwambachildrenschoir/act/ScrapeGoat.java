@@ -138,7 +138,7 @@ public class ScrapeGoat {
 					case 0: {	
 						// dates look like this: 1/30/2014
 						dateTxt = field.getText();
-						donation.setPaymentDate(new SimpleDateFormat("mm/dd/yyyy", Locale.ENGLISH).parse(dateTxt));						
+						donation.setPaymentDate(new SimpleDateFormat("MM/dd/yyyy", Locale.ENGLISH).parse(dateTxt));						
 						break;
 					}
 					case 1: {
