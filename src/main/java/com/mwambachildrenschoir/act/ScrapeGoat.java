@@ -124,8 +124,7 @@ public class ScrapeGoat {
 			if (logger.isDebugEnabled()) logger.debug("scaping donor");
 			Iterator<WebElement> fields = row.findElements(By.xpath(".//td")).iterator();
 			int i = 0;			
-			DonationEntity donation = new DonationEntity(); 
-			donation.setDonorId(0);
+			DonationEntity donation = new DonationEntity();
 			String donorTxt = "";
 			String dateTxt = "";
 			while (fields.hasNext()) {
@@ -150,9 +149,12 @@ public class ScrapeGoat {
 					
 					case 2: {
 						donorTxt = field.getText().replace("Donor Information", "").trim();
+						DonorEntity donor = actDao.getDonorByName(donorTxt);
+						if (donor == null) {
+							donor = new DonorEntity();
+							donor.setName(donorTxt);
+						}
 						String href = field.findElement(By.tagName("a")).getAttribute("href");
-						DonorEntity donor = new DonorEntity();
-						donor.setName(donorTxt);
 						donor.setAddress1("");
 						donor.setAddress2("");
 						donor.setCity("");
@@ -162,7 +164,7 @@ public class ScrapeGoat {
 						donor.setPhone("");
 						donor.setNotes(href);
 						// only put a placeholder in for this donor if the entity does not already exist
-						donation.setDonorId(actDao.saveNewDonor(donor));
+						donation.setDonor(donor);
 						break; 
 					}
 
@@ -180,7 +182,7 @@ public class ScrapeGoat {
 				i++;
 			}
 			
-			if (donation.getDonorId() == 0) continue;
+			if (donation.getDonor().getId() == 0) continue;
 			logger.info("found donation, date:" + dateTxt + ", donor:" + donorTxt);
 			actDao.persistDonation(donation);
 		}
