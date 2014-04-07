@@ -211,7 +211,7 @@ public class ScrapeGoat {
 	 * 
 	 * @param driver
 	 */
-	private int scrapeDonor(Iterator<WebElement> iter) {
+	private long scrapeDonor(Iterator<WebElement> iter) {
 		DonorEntity donor = new DonorEntity();
 		
 		int i = 0;
