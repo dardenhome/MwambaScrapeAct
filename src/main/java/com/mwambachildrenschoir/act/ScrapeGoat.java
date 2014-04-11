@@ -128,7 +128,7 @@ public class ScrapeGoat {
 
 				WebElement field = fields.next();
 				if (field.getText().equals("No records returned.")) {
-					logger.warn("no records for this month, must be a future month");
+					if (logger.isDebugEnabled()) logger.debug("no records for this month, must be a future month");
 					continue;
 				}
 				switch(i) {
