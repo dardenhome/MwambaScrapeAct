@@ -207,7 +207,7 @@ public class ScrapeGoat {
 				};
 				scrapeDonor(iter);
 			} catch (Exception e) {
-				logger.error("error while trying to dig into donor: " + donor.getName());
+				logger.error("error while lookup up " + donor.getName());
 				continue;
 			}
 		}
