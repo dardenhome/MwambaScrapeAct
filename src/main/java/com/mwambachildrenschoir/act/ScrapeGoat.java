@@ -194,16 +194,22 @@ public class ScrapeGoat {
 	private void updateDonors(WebDriver driver) throws UnsupportedEncodingException {
 		Iterator<DonorEntity> donors = (Iterator<DonorEntity>)actDao.getAllDonors().iterator();
 		logger.info("begining deep dive into donor info");
+		DonorEntity donor = null;
 		while (donors.hasNext()) {
-			DonorEntity donor = donors.next();
-			if (donor.getNotes() == null || donor.getNotes().trim().equals("")) continue;
-			driver.navigate().to(donor.getNotes());
-			Iterator<WebElement> iter = driver.findElements(By.xpath("//p")).iterator();
-			if (driver.getPageSource().indexOf("No records returned.") > 0) {
-				logger.warn("no donor information found for " + donor.getName());
+			try {
+				donor = donors.next();
+				if (donor.getNotes() == null || donor.getNotes().trim().equals("")) continue;
+				driver.navigate().to(donor.getNotes());
+				Iterator<WebElement> iter = driver.findElements(By.xpath("//p")).iterator();
+				if (driver.getPageSource().indexOf("No records returned.") > 0) {
+					logger.warn("no donor information found for " + donor.getName());
+					continue;
+				};
+				scrapeDonor(iter);
+			} catch (Exception e) {
+				logger.error("error while trying to dig into donor: " + donor.getName());
 				continue;
-			};
-			scrapeDonor(iter);
+			}
 		}
 	}
 	
