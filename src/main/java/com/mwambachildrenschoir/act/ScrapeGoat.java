@@ -3,6 +3,7 @@ package com.mwambachildrenschoir.act;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.mwambachildrenschoir.dao.ActDao;
 import com.mwambachildrenschoir.dao.DonationEntity;
 import com.mwambachildrenschoir.dao.DonorEntity;
+import com.mwambachildrenschoir.email.Email;
 
 public class ScrapeGoat {
 	final static Logger logger = LoggerFactory.getLogger(ScrapeGoat.class);
@@ -25,12 +27,19 @@ public class ScrapeGoat {
 	private ActDao actDao;
 	private WebDriver driver;
 	
+	
+	public ScrapeGoat(){};
+	
+	public ScrapeGoat(String beginDate, String endDate, boolean scrapeDonors) throws Exception {
+		runIt(beginDate,endDate, scrapeDonors);
+	}
+	
 	/**
 	 * 
 	 * @param user
 	 * @param pass
 	 */
-	public ScrapeGoat(String beginDate, String endDate, boolean scrapeDonors) throws Exception {
+	public void runIt(String beginDate, String endDate, boolean scrapeDonors) throws Exception {
 		JavascriptExecutor js;
 		actDao = new ActDao();
 		driver = new HtmlUnitDriver(true); // true enables javascript
@@ -288,6 +297,31 @@ public class ScrapeGoat {
 	    					  );
 	    btnSubmit.submit(); // secondary login
 	}
+
+	/**
+	 * Check if we have any new donations for today. If so, send out an email notification
+	 */
+	public void checkForNewDonations(int intervalDay) {
+		ActDao actDao =  new ActDao();
+		Iterator<?> rows = actDao.getRecentDonations(intervalDay).iterator();
+		
+		if (!rows.hasNext()) return;
+		
+		String emailBody = "<p>New ACT Transaction Have been Posted</p></br></br><table>";
+		
+		while (rows.hasNext()) {
+			Object[] row = (Object[])rows.next();
+			emailBody += "<tr><td>" + (String)row[0] + "</td><td>" + (String)row[1] + "</td><td>$" + String.format("%10.2f", (double)row[2]) + "&nbsp;&nbsp;</td><td>" + new SimpleDateFormat("MM/dd/YYY").format((Date)row[3]) + "</td></tr>"; 
+		}
+		
+		emailBody += "<table>";
+		
+		try {
+			Email.sendHtml("New ACT Donations Posted", emailBody, "email.newtransactions");
+		} catch (Exception e) {
+			logger.error("error sending new transactions email notification", e);
+		}
+	}
 	
 	/**
 	 * 
@@ -318,7 +352,9 @@ public class ScrapeGoat {
 			System.exit(0);
 		}
 		
-		new ScrapeGoat(beginDate, endDate, scrapeDonors);
+		ScrapeGoat sg = new ScrapeGoat();
+		sg.runIt(beginDate, endDate, scrapeDonors);
+		sg.checkForNewDonations(1);
 		System.exit(0);
 	}
 }
