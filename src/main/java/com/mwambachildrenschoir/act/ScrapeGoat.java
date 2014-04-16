@@ -305,7 +305,10 @@ public class ScrapeGoat {
 		ActDao actDao =  new ActDao();
 		Iterator<?> rows = actDao.getRecentDonations(intervalDay).iterator();
 		
-		if (!rows.hasNext()) return;
+		if (!rows.hasNext()) {
+			logger.info("no new new donations found");
+			return;
+		}
 		
 		String emailBody = "<p>New ACT Transaction Have been Posted</p></br></br><table>";
 		
@@ -317,6 +320,7 @@ public class ScrapeGoat {
 		emailBody += "<table>";
 		
 		try {
+			logger.info("found new donations - sending out email notification");
 			Email.sendHtml("New ACT Donations Posted", emailBody, "email.newtransactions");
 		} catch (Exception e) {
 			logger.error("error sending new transactions email notification", e);
