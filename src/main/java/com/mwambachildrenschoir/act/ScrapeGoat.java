@@ -310,7 +310,7 @@ public class ScrapeGoat {
 			return;
 		}
 		
-		String emailBody = "<p>New ACT Transaction Have been Posted</p></br></br><table>";
+		String emailBody = "<p>New ACT Transaction have been posted</p></br></br><table>";
 		
 		while (rows.hasNext()) {
 			Object[] row = (Object[])rows.next();
@@ -357,7 +357,7 @@ public class ScrapeGoat {
 		}
 		
 		ScrapeGoat sg = new ScrapeGoat();
-		sg.runIt(beginDate, endDate, scrapeDonors);
+		//sg.runIt(beginDate, endDate, scrapeDonors);
 		sg.checkForNewDonations(1);
 		System.exit(0);
 	}
