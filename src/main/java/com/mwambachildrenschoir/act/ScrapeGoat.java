@@ -74,7 +74,7 @@ public class ScrapeGoat {
 				donationForms.get(donatonsFormsIndex).submit();
 	
 				// now we're looking at the pages that have the months for each account
-				// we only need the first one because we can manipulat the hidden fields 
+				// we only need the first one because we can manipulate the hidden fields 
 				// using javascript and select as many months as we want (or any month)
 				List<WebElement> detailsForms = driver.findElements(By.tagName("form"));
 				WebElement form = detailsForms.get(0);
@@ -357,7 +357,7 @@ public class ScrapeGoat {
 		}
 		
 		ScrapeGoat sg = new ScrapeGoat();
-		//sg.runIt(beginDate, endDate, scrapeDonors);
+		sg.runIt(beginDate, endDate, scrapeDonors);
 		sg.checkForNewDonations(1);
 		System.exit(0);
 	}
