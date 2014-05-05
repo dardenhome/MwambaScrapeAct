@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mwambachildrenschoir.dao.ActDao;
 import com.mwambachildrenschoir.dao.DonationEntity;
-import com.mwambachildrenschoir.dao.DonorEntity;
+import com.mwambachildrenschoir.dao.SponsorEntity;
 import com.mwambachildrenschoir.email.Email;
 
 public class ScrapeGoat {
@@ -155,9 +155,9 @@ public class ScrapeGoat {
 					
 					case 2: {
 						donorTxt = field.getText().replace("Donor Information", "").trim();
-						DonorEntity donor = actDao.getDonorByName(donorTxt);
+						SponsorEntity donor = actDao.getDonorByName(donorTxt);
 						if (donor == null) {
-							donor = new DonorEntity();
+							donor = new SponsorEntity();
 							donor.setName(donorTxt);
 						}
 						String href = field.findElement(By.tagName("a")).getAttribute("href");
@@ -201,9 +201,9 @@ public class ScrapeGoat {
 	 * @throws UnsupportedEncodingException
 	 */
 	private void updateDonors(WebDriver driver) throws UnsupportedEncodingException {
-		Iterator<DonorEntity> donors = (Iterator<DonorEntity>)actDao.getAllDonors().iterator();
+		Iterator<SponsorEntity> donors = (Iterator<SponsorEntity>)actDao.getAllDonors().iterator();
 		logger.info("begining deep dive into donor info");
-		DonorEntity donor = null;
+		SponsorEntity donor = null;
 		while (donors.hasNext()) {
 			try {
 				donor = donors.next();
@@ -227,7 +227,7 @@ public class ScrapeGoat {
 	 * @param driver
 	 */
 	private long scrapeDonor(Iterator<WebElement> iter) {
-		DonorEntity donor = new DonorEntity();
+		SponsorEntity donor = new SponsorEntity();
 		
 		int i = 0;
 		while (iter.hasNext()) {
@@ -269,7 +269,7 @@ public class ScrapeGoat {
 	 * fill in the donor city, state, zip
 	 * @param donor
 	 */
-	private void fillInDonorCSZ(DonorEntity donor, String txt) {
+	private void fillInDonorCSZ(SponsorEntity donor, String txt) {
 		String txtBak = txt;
 		try {
 			// Westminister, MD  21157-3476

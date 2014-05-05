@@ -11,19 +11,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mwambachildrenschoir.dao.ActDao;
-import com.mwambachildrenschoir.dao.DonorEntity;
+import com.mwambachildrenschoir.dao.SponsorEntity;
 
 public class ExportDonorToCSV {
 	final static Logger logger = LoggerFactory.getLogger(ExportDonorToCSV.class);
 
 	public ExportDonorToCSV() {
 		ActDao actDao = new ActDao();
-		Iterator<DonorEntity> donors = actDao.getAllDonors().iterator();
+		Iterator<SponsorEntity> donors = actDao.getAllDonors().iterator();
 
 		// Name,Company,Email,Phone,Mobile,Fax,Website,Street,City,State,ZIP,Country
 		File f = new File("donors.csv");
 		if (f.exists()) f.delete();
-		DonorEntity donor = null;
+		SponsorEntity donor = null;
 		try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("donors.csv", true)))) {
 			while (donors.hasNext()) {
 				donor = donors.next();
