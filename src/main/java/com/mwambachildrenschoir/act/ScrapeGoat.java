@@ -155,22 +155,13 @@ public class ScrapeGoat {
 					
 					case 2: {
 						donorTxt = field.getText().replace("Donor Information", "").trim();
-						SponsorEntity donor = actDao.getDonorByName(donorTxt);
-						if (donor == null) {
-							donor = new SponsorEntity();
-							donor.setName(donorTxt);
+						// this will create the donor if the donor does not already exist
+						SponsorEntity sponsor = actDao.getDonorByName(donorTxt);
+						if (sponsor == null) {
+							sponsor = new SponsorEntity();
+							sponsor.setName(donorTxt);
 						}
-						String href = field.findElement(By.tagName("a")).getAttribute("href");
-						donor.setAddress1("");
-						donor.setAddress2("");
-						donor.setCity("");
-						donor.setState("");
-						donor.setZip("");
-						donor.setEmail("");
-						donor.setPhone("");
-						donor.setNotes(href);
-						// only put a placeholder in for this donor if the entity does not already exist
-						donation.setDonor(donor);
+						donation.setDonor(sponsor);
 						break; 
 					}
 
@@ -188,7 +179,6 @@ public class ScrapeGoat {
 				i++;
 			}
 			
-			if (donation.getDonor().getId() == 0) continue;
 			logger.info("found donation, date:" + dateTxt + ", donor:" + donorTxt);
 			actDao.persistDonation(donation);
 		}
