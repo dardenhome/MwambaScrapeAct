@@ -1,6 +1,7 @@
 package com.mwambachildrenschoir.act;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -70,7 +71,7 @@ public class ScrapeGoat {
 		
 			if (logger.isDebugEnabled()) logger.debug("beginning to iterate over accounts");
 			while (donatonsFormsIndex < donationsFormsCount) {
-				
+				String accountId = ((WebElement)donationForms.get(donatonsFormsIndex)).findElement(By.name("ID")).getAttribute("VALUE");
 				donationForms.get(donatonsFormsIndex).submit();
 	
 				// now we're looking at the pages that have the months for each account
@@ -96,7 +97,7 @@ public class ScrapeGoat {
 				}
 				
 				form.submit();
-				scrapeMonthDonations();
+				scrapeMonthDonations(Integer.parseInt(accountId)); // pass along the account id
 				
 				donatonsFormsIndex++;
 				driver.navigate().to(currentDonationsUrl);
@@ -119,7 +120,7 @@ public class ScrapeGoat {
 	 * @throws ParseException 
 	 * @throws InterruptedException 
 	 */
-	private void scrapeMonthDonations() throws ParseException, InterruptedException {
+	private void scrapeMonthDonations(int accountId) throws ParseException, InterruptedException {
 
 		// parse out this page
 		if (logger.isDebugEnabled()) logger.debug("scaping donors for current month");
@@ -180,7 +181,7 @@ public class ScrapeGoat {
 			}
 			
 			logger.info("found donation, date:" + dateTxt + ", donor:" + donorTxt);
-			actDao.persistDonation(donation);
+			actDao.persistDonation(donation, accountId);
 		}
 		
 	}
@@ -304,7 +305,7 @@ public class ScrapeGoat {
 		
 		while (rows.hasNext()) {
 			Object[] row = (Object[])rows.next();
-			emailBody += "<tr><td>" + (String)row[0] + "</td><td>" + (String)row[1] + "</td><td>$" + String.format("%10.2f", (double)row[2]) + "&nbsp;&nbsp;</td><td>" + new SimpleDateFormat("MM/dd/YYY").format((Date)row[3]) + "</td></tr>"; 
+			emailBody += "<tr><td>" + (String)row[0] + "</td><td>" + (String)row[1] + "</td><td>$" + String.format("%10.2f", (BigDecimal)row[2]) + "&nbsp;&nbsp;</td><td>" + new SimpleDateFormat("MM/dd/YYY").format((Date)row[3]) + "</td></tr>"; 
 		}
 		
 		emailBody += "<table>";
